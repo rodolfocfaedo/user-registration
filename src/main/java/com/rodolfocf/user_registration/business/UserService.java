@@ -16,12 +16,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserConverter userConverter;
 
-
     public UserResponseDTO saveUser(UserRequestDTO userRequestDTO) {
-        User convertedUser = userConverter.fromUserRequestDTOtoUserEntity(userRequestDTO);
-        if (userRepository.existsByEmail(convertedUser.getEmail())){
+        if (userRepository.existsByEmail(userRequestDTO.getEmail())) {
             throw new EmailAlreadyRegisteredException("Email " + userRequestDTO.getEmail() + " is already registered");
         }
+        User convertedUser = userConverter.fromUserRequestDTOtoUserEntity(userRequestDTO);
         return userConverter.fromUserEntitytoUserResponseDTO(userRepository.saveAndFlush(convertedUser));
     }
 }

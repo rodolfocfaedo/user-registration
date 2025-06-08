@@ -20,30 +20,27 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
+    @InjectMocks
+    UserService userService;
 
     @Mock
     private UserRepository userRepository;
 
+    @Mock
     private UserConverter userConverter;
-    private UserService userService;
 
-    // Your test data fields
     private User user;
     private UserRequestDTO userRequestDTO;
     private UserResponseDTO userResponseDTO;
 
     @BeforeEach
     public void setup() {
-        // Initialize the real converter
-        userConverter = new UserConverter();
-
-        // Manually inject dependencies into UserService
-        userService = new UserService(userRepository, userConverter);
 
         // Your existing setup
         user = User.builder()
@@ -55,13 +52,14 @@ class UserServiceTest {
         userRequestDTO = UserRequestDTOFixture.build("Afonso", "afonso@email.com");
         userResponseDTO = UserResponseDTOFixture.build(12345, "Afonso", "afonso@email.com");
     }
-//recebe um dto(request); converte em entity; salva no banco de dados; converte em dto(response)
+
 
 
     @Test
     @DisplayName("Should save user successfully")
     void shouldSaveUserSuccessfully() {
         // GIVEN
+        //primeiro vai no repositório verificar se o email já existe(nesse caso é falso para o teste)
         when(userRepository.existsByEmail(userRequestDTO.getEmail())).thenReturn(false);
         when(userConverter.fromUserRequestDTOtoUserEntity(userRequestDTO)).thenReturn(user);
         when(userRepository.saveAndFlush(user)).thenReturn(user);
@@ -77,13 +75,18 @@ class UserServiceTest {
 
 
     @Test
+    @DisplayName("Should throw EmailAlreadyExistsException if email is already exists")
     void shouldThrowEmailAlreadyExistsExceptionIfEmailAlreadyExists() {
         //GIVEN
+        //primeiro vai no repositório verificar se o email já existe(nesse caso é true para o teste)
         when(userRepository.existsByEmail(userRequestDTO.getEmail())).thenReturn(true);
 
         //WHEN & THEN
         assertThatThrownBy(() -> userService.saveUser(userRequestDTO))
                 .isInstanceOf(EmailAlreadyRegisteredException.class)
                 .hasMessageContaining("Email " + userRequestDTO.getEmail() + " is already registered");
+
+        verifyNoInteractions(userConverter);
     }
+
 }
