@@ -36,6 +36,13 @@ public class UserService {
 
     }
 
+    public void deleteUserByEmail(String email){
+        if (!userRepository.existsByEmail(email)) {
+            throw new EmailNotFoundException("Email \"" + email + "\" not found.");
+        }
+        userRepository.deleteByEmail(email);
+    }
+
 
 }
 

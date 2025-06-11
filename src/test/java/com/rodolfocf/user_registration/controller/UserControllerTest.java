@@ -23,8 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -149,6 +148,31 @@ class UserControllerTest {
 
         //THEN
         verify(userService, times(1)).searchUserByEmail(email);
+    }
+
+
+
+
+
+
+
+    @Test
+    @DisplayName("DELETE /user/delete - Should delete user data successfully")
+    void shouldDeleteUserDataSuccessfully() throws Exception {
+
+        //GIVEN
+        String url = "/user/delete";
+        doNothing().when(userService).deleteUserByEmail(email);
+
+        //WHEN
+        mockMvc.perform(delete(url)
+                        .param("email", email)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk());
+        //THEN
+        verify(userService, times(1)).deleteUserByEmail(email);
     }
 }
 
