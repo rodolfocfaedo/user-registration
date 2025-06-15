@@ -129,8 +129,8 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("GET /user/search - Should throw EmailNotFound if email is not found")
-    void shouldThrowEmailNotFoundExceptionIfEmailIsNotFound() throws Exception {
+    @DisplayName("GET /user/search - Should throw EmailNotFound if email is not found during get")
+    void shouldThrowEmailNotFoundExceptionIfEmailIsNotFoundDuringGet() throws Exception {
 
         //GIVEN
         String url = "/user/search";
@@ -150,11 +150,46 @@ class UserControllerTest {
         verify(userService, times(1)).searchUserByEmail(email);
     }
 
+    @Test
+    @DisplayName("PUT /user/update - Should update user data successfully")
+    void shouldUpdateUserDataSuccessfully() throws Exception {
 
+        //GIVEN
+        String url = "/user/update";
+        when(userService.searchUserByEmail(email)).thenReturn(userResponseDTO);
 
+        //WHEN
+        mockMvc.perform(put(url)
+                        .param("email", email)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk());
+        //THEN
+        verify(userService, times(1)).updateUserByEmail(email);
+    }
 
+    @Test
+    @DisplayName("PUT /user/update - Should throw EmailNotFound if email is not found during update")
+    void shouldThrowEmailNotFoundExceptionIfEmailIsNotFoundDuringUpdate() throws Exception {
 
+        //GIVEN
+        String url = "/user/update";
 
+        doThrow(new EmailNotFoundException("Email " + email + " not found"))
+                .when(userService).updateUserByEmail(email);
+
+        //WHEN
+        mockMvc.perform(put(url)
+                        .param("email", email)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound());
+
+        //THEN
+        verify(userService, times(1)).updateUserByEmail(email);
+    }
 
     @Test
     @DisplayName("DELETE /user/delete - Should delete user data successfully")

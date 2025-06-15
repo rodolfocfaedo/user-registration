@@ -43,6 +43,18 @@ public class UserController {
         return ResponseEntity.ok(userService.searchUserByEmail(email));
     }
 
+    @PutMapping("/update")
+    @Operation(summary = "Update user", description = "Update user")
+    @ApiResponse(responseCode = "200", description = "User updated successfully")
+    @ApiResponse(responseCode = "400", description = "User can't be updated")
+    @ApiResponse(responseCode = "401", description = "Invalid credentials")
+    @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    public ResponseEntity<UserResponseDTO> UpdateUserByEmail(@RequestParam("email") String email){
+        userService.updateUserByEmail(email);
+        return ResponseEntity.ok(userService.searchUserByEmail(email));
+    }
+    
+
     @DeleteMapping("/delete")
     @Operation(summary = "Delete user", description = "Delete user")
     @ApiResponse(responseCode = "200", description = "User delete successfully")
