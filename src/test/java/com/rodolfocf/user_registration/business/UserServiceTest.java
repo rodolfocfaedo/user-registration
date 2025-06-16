@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -96,7 +97,8 @@ class UserServiceTest {
     @DisplayName("Should find user by email successfully")
     void shouldSearchUserByEmailSuccessfully() {
         //GIVEN
-        when(userRepository.findByEmail(email)).thenReturn(Optional.of(userResponseDTO));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(userConverter.fromUserEntitytoUserResponseDTO(user)).thenReturn(userResponseDTO);
 
         //WHEN
         UserResponseDTO responseDTO = userService.searchUserByEmail(email);
@@ -108,7 +110,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Should throw EmailNotFoundException if email is not found")
-    void shouldThrowEmailNotFoundExceptionIfEmailWasNotFound(){
+    void shouldThrowEmailNotFoundExceptionIfEmailWasNotFound() {
         //GIVEN
         //primeiro vai no repositório verificar se o email já existe(nesse caso é false para o teste)
         when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
@@ -118,4 +120,57 @@ class UserServiceTest {
                 .isInstanceOf(EmailNotFoundException.class);
 
     }
-}
+
+    @Test
+    @DisplayName("Should update user by email successfully")
+    void shouldUpdateUserByEmailSuccessfully() {
+        //GIVEN
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(userConverter.fromUserEntitytoUserResponseDTO(user)).thenReturn(userResponseDTO);
+
+        //WHEN
+        UserResponseDTO responseDTO = userService.updateUserByEmail(email);
+
+        //Then
+        Assertions.assertThat(responseDTO).isEqualTo(userResponseDTO);
+
+    }
+
+    @Test
+    @DisplayName("Should throw EmailNotFoundException if email is not found during updating")
+    void shouldThrowEmailNotFoundExceptionIfEmailWasNotFoundDuringUpdate() {
+        //GIVEN
+        //primeiro vai no repositório verificar se o email já existe(nesse caso é false para o teste)
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        //WHEN and THEN
+        Assertions.assertThatThrownBy(() -> userService.updateUserByEmail(email))
+                .isInstanceOf(EmailNotFoundException.class);
+    }
+
+        @Test
+        @DisplayName("Should delete user by email successfully")
+        void shouldDeleteUserByEmailSuccessfully () {
+            //GIVEN
+            when(userRepository.existsByEmail(email)).thenReturn(true);
+
+            userService.deleteUserByEmail(email);
+
+            //WHEN and THEN
+            verify(userRepository).deleteByEmail(email);
+
+        }
+
+        @Test
+        @DisplayName("Should throw EmailNotFoundException if email is not found during delete")
+        void shouldThrowEmailNotFoundExceptionIfEmailWasNotFoundDuringDelete () {
+            //GIVEN
+            //primeiro vai no repositório verificar se o email já existe(nesse caso é false para o teste)
+            when(userRepository.existsByEmail(email)).thenReturn(false);
+
+            //WHEN and THEN
+            Assertions.assertThatThrownBy(() -> userService.deleteUserByEmail(email))
+                    .isInstanceOf(EmailNotFoundException.class);
+
+        }
+    }

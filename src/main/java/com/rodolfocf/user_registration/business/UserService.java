@@ -36,6 +36,19 @@ public class UserService {
 
     }
 
+    public UserResponseDTO updateUserByEmail(String email){
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new EmailNotFoundException("Email \"" + email + "\" not found."));
+        return userConverter.fromUserEntitytoUserResponseDTO(user);
+    }
+
+    public void deleteUserByEmail(String email){
+        if (!userRepository.existsByEmail(email)) {
+            throw new EmailNotFoundException("Email \"" + email + "\" not found.");
+        }
+        userRepository.deleteByEmail(email);
+    }
+
 
 }
 
